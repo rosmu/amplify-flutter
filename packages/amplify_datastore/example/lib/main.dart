@@ -68,7 +68,7 @@ class _MyAppState extends State<MyApp> {
 
     await amplify.addPlugin(dataStorePlugins: [datastorePlugin]);
     // Configure
-    await amplify.configure("{}");
+    await amplify.configure(amplifyconfig);
     setState(() {
       _isAmplifyConfigured = true;
     });
