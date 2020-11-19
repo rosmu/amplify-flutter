@@ -144,7 +144,7 @@ class DataStorePluginUnitTests: XCTestCase {
 
         class MockDataStoreBridge: DataStoreBridge {
             override func onDelete(id: String,
-                                   modelData: FlutterSerializedModel,
+                                   serializedModel: FlutterSerializedModel,
                                    modelSchema: ModelSchema,
                                    completion: @escaping DataStoreCallback<Void>
             ) throws {
@@ -171,7 +171,7 @@ class DataStorePluginUnitTests: XCTestCase {
         
         class MockDataStoreBridge: DataStoreBridge {
             override func onDelete(id: String,
-                                   modelData: FlutterSerializedModel,
+                                   serializedModel: FlutterSerializedModel,
                                    modelSchema: ModelSchema,
                                    completion: @escaping DataStoreCallback<Void>) throws {
                 // Validations that we called the native library correctly
