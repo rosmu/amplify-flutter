@@ -214,7 +214,6 @@ public class SwiftAmplifyDataStorePlugin: NSObject, FlutterPlugin {
             let serializedModel = FlutterSerializedModel(id: modelID, map: try FlutterDataStoreRequestUtils.getJSONValue(serializedModelData))
 
             try bridge.onDelete(
-                id: modelID,
                 serializedModel: serializedModel,
                 modelSchema: modelSchema) { (result) in
                     switch result {

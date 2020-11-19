@@ -50,8 +50,7 @@ public class DataStoreBridge {
 
     }
 
-    func onDelete(id: String,
-                  serializedModel: FlutterSerializedModel,
+    func onDelete(serializedModel: FlutterSerializedModel,
                   modelSchema: ModelSchema,
                   completion: @escaping DataStoreCallback<Void>) throws {
         
