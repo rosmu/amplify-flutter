@@ -94,7 +94,7 @@ public class SwiftAmplifyDataStorePlugin: NSObject, FlutterPlugin {
 
             let dataStorePlugin = AWSDataStorePlugin(modelRegistration: flutterModelRegistration)
             try Amplify.add(plugin: dataStorePlugin)
-            try Amplify.add(plugin: AWSAPIPlugin())
+            //try Amplify.add(plugin: AWSAPIPlugin())
             Amplify.Logging.logLevel = .info
             print("Amplify configured with DataStore plugin")
             result(true)
@@ -169,7 +169,7 @@ public class SwiftAmplifyDataStorePlugin: NSObject, FlutterPlugin {
                 queryPredicate = try QueryPredicateBuilder.fromSerializedMap(queryPredicateData)
             }
 
-            let serializedModel = SerializedModel(id: modelID, map: try FlutterDataStoreRequestUtils.getJSONValue(serializedModelData))
+            let serializedModel = FlutterSerializedModel(id: modelID, map: try FlutterDataStoreRequestUtils.getJSONValue(serializedModelData))
 
             try bridge.onSave(
                 serializedModel: serializedModel,
@@ -213,9 +213,10 @@ public class SwiftAmplifyDataStorePlugin: NSObject, FlutterPlugin {
             let serializedModelData = try FlutterDataStoreRequestUtils.getSerializedModelData(methodChannelArguments: args)
             let modelID = try FlutterDataStoreRequestUtils.getModelID(serializedModelData: serializedModelData)
 
-            let serializedModel = SerializedModel(id: modelID, map: try FlutterDataStoreRequestUtils.getJSONValue(serializedModelData))
+            let serializedModel = FlutterSerializedModel(id: modelID, map: try FlutterDataStoreRequestUtils.getJSONValue(serializedModelData))
 
             try bridge.onDelete(
+                id: modelID,
                 serializedModel: serializedModel,
                 modelSchema: modelSchema) { (result) in
                     switch result {
