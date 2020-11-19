@@ -42,8 +42,6 @@ public class SwiftAmplifyDataStorePlugin: NSObject, FlutterPlugin {
         registrar.addMethodCallDelegate(instance, channel: channel)
     }
 
-    private var isCreated : Bool = false;
-
     public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
         var arguments: [String: Any] = [:]
         do {
@@ -94,7 +92,7 @@ public class SwiftAmplifyDataStorePlugin: NSObject, FlutterPlugin {
 
             let dataStorePlugin = AWSDataStorePlugin(modelRegistration: flutterModelRegistration)
             try Amplify.add(plugin: dataStorePlugin)
-            //try Amplify.add(plugin: AWSAPIPlugin())
+            try Amplify.add(plugin: AWSAPIPlugin())
             Amplify.Logging.logLevel = .info
             print("Amplify configured with DataStore plugin")
             result(true)
