@@ -318,4 +318,5 @@ class AmplifyDataStorePlugin : FlutterPlugin, MethodCallHandler {
     private fun postFlutterError(flutterResult: Result, msg: String, errorMap: Map<String, Any>) {
         handler.post { flutterResult.error("AmplifyException", msg, errorMap) }
     }
+
 }
