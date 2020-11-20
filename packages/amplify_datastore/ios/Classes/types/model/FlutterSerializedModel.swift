@@ -29,7 +29,6 @@ struct FlutterSerializedModel: Model, JSONValueHolder {
 
     public init(from decoder: Decoder) throws {
 
-        print("Decoder \(decoder)")
         let y = try decoder.container(keyedBy: CodingKeys.self)
         id = try y.decode(String.self, forKey: .id)
         
@@ -70,7 +69,6 @@ struct FlutterSerializedModel: Model, JSONValueHolder {
     }
     
     public func encode(to encoder: Encoder) throws {
-        print("Encoder \(encoder)")
         var x = encoder.unkeyedContainer()
         try x.encode(values)
     }
