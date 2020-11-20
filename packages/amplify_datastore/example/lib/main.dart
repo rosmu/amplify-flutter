@@ -192,7 +192,7 @@ class _MyAppState extends State<MyApp> {
 
   savePost(String title, int rating, Blog associatedBlog) async {
     try {
-      Post post = Post(title: title, rating: rating, blog: associatedBlog);
+      Post post = Post(title: null, rating: rating, blog: associatedBlog);
       await Amplify.DataStore.save(post);
       runQueries();
     } catch (e) {
@@ -251,6 +251,7 @@ class _MyAppState extends State<MyApp> {
 
   @override
   Widget build(BuildContext context) {
+    executeAfterBuild();
     return MaterialApp(
       home: Scaffold(
         appBar: AppBar(
@@ -336,10 +337,6 @@ class _MyAppState extends State<MyApp> {
                       reverse: true,
                       itemCount: _streamingData.length,
                       itemBuilder: (BuildContext context, int index) {
-                        _scrollController.animateTo(
-                            _scrollController.position.maxScrollExtent,
-                            duration: Duration(milliseconds: 200),
-                            curve: Curves.easeOut);
                         return Container(
                           margin: EdgeInsets.fromLTRB(30, 0, 0, 0),
                           child: Text(_streamingData[index]),
@@ -353,5 +350,20 @@ class _MyAppState extends State<MyApp> {
         ),
       ),
     );
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    WidgetsBinding.instance.addPostFrameCallback((_) => executeAfterBuild());
+  }
+
+  Future<void> executeAfterBuild() async {
+    // this code will get executed after the build method
+    // because of the way async functions are scheduled
+    Future.delayed(const Duration(milliseconds: 500), () {
+      _scrollController.animateTo(_scrollController.position.maxScrollExtent,
+          duration: Duration(milliseconds: 200), curve: Curves.easeOut);
+    });
   }
 }

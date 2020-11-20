@@ -4,7 +4,7 @@ Widget displayQueryButtons(
     bool isAmplifyConfigured, _MyAppState app, Function queryFn) {
   var boldText =
       TextStyle(fontWeight: FontWeight.bold, color: Colors.black, fontSize: 14);
-  return Row(children: [
+  return Row(mainAxisAlignment: MainAxisAlignment.center, children: [
     VerticalDivider(
       color: Colors.white,
       width: 5,
@@ -21,7 +21,7 @@ Widget displayQueryButtons(
       },
       color: app._queriesToView == "Blog" ? Colors.white10 : Colors.white60,
       child: Text(
-        'Query Blogs',
+        'Blogs',
         style: app._queriesToView == "Blog" ? boldText : TextStyle(),
       ),
     ),
@@ -38,7 +38,7 @@ Widget displayQueryButtons(
       },
       color: app._queriesToView == "Post" ? Colors.white10 : Colors.white60,
       child: Text(
-        'Query Posts',
+        'Posts',
         style: app._queriesToView == "Post" ? boldText : TextStyle(),
       ),
     ),
@@ -55,7 +55,7 @@ Widget displayQueryButtons(
       },
       color: app._queriesToView == "Comment" ? Colors.white10 : Colors.white60,
       child: Text(
-        'Query Comments',
+        'Comments',
         style: app._queriesToView == "Comment" ? boldText : TextStyle(),
       ),
     ),
@@ -65,7 +65,7 @@ Widget displayQueryButtons(
 Widget getWidgetToDisplayBlog(List<Blog> _blogsToView, Function deleteBlog) {
   return Center(
       child: Container(
-    height: 400,
+    height: 350,
     child: ListView.builder(
         itemCount: _blogsToView.length,
         padding: const EdgeInsets.all(16.0),
@@ -102,7 +102,7 @@ Widget getWidgetToDisplayBlog(List<Blog> _blogsToView, Function deleteBlog) {
 Widget getWidgetToDisplayPost(List<Post> _postsToView, Function deletePost) {
   return Center(
       child: Container(
-    height: 400,
+    height: 350,
     child: ListView.builder(
         itemCount: _postsToView.length,
         padding: const EdgeInsets.all(16.0),
@@ -136,7 +136,7 @@ Widget getWidgetToDisplayComment(
     List<Comment> _commentsToView, Function deleteFn) {
   return Center(
       child: Container(
-    height: 400,
+    height: 350,
     child: ListView.builder(
         itemCount: _commentsToView.length,
         padding: const EdgeInsets.all(16.0),
