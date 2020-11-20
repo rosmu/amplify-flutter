@@ -99,7 +99,8 @@ Widget getWidgetToDisplayBlog(List<Blog> _blogsToView, Function deleteBlog) {
   ));
 }
 
-Widget getWidgetToDisplayPost(List<Post> _postsToView, Function deletePost) {
+Widget getWidgetToDisplayPost(
+    List<Post> _postsToView, Function deletePost, List<Blog> allBlogs) {
   return Center(
       child: Container(
     height: 350,
@@ -113,8 +114,12 @@ Widget getWidgetToDisplayPost(List<Post> _postsToView, Function deletePost) {
             title: Text(
               "Title: " +
                   _postsToView[i].title +
-                  " and rating: " +
-                  _postsToView[i].rating.toString(),
+                  ", rating: " +
+                  _postsToView[i].rating.toString() +
+                  ", blog: " +
+                  allBlogs
+                      .firstWhere((blog) => blog.id == _postsToView[i].blog.id)
+                      .name,
               style: TextStyle(fontSize: 14.0),
             ),
             trailing: IconButton(
@@ -133,7 +138,7 @@ Widget getWidgetToDisplayPost(List<Post> _postsToView, Function deletePost) {
 }
 
 Widget getWidgetToDisplayComment(
-    List<Comment> _commentsToView, Function deleteFn) {
+    List<Comment> _commentsToView, Function deleteFn, List<Post> allPosts) {
   return Center(
       child: Container(
     height: 350,
@@ -145,13 +150,19 @@ Widget getWidgetToDisplayComment(
         itemBuilder: /*1*/ (context, i) {
           return ListTile(
             title: Text(
-              "Content: " + _commentsToView[i].content,
+              "Content: " +
+                  _commentsToView[i].content +
+                  " and post: " +
+                  allPosts
+                      .firstWhere(
+                          (post) => post.id == _commentsToView[i].post.id)
+                      .title,
               style: TextStyle(fontSize: 14.0),
             ),
             trailing: IconButton(
               onPressed: () {
                 print("Deleting " + _commentsToView[i].content);
-                deleteFn(_commentsToView[i].id);
+                deleteFn(_commentsToView[i]);
               },
               icon: Icon(
                 Icons.delete_forever_sharp,
