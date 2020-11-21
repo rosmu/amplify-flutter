@@ -225,6 +225,7 @@ class _MyAppState extends State<MyApp> {
 
   deletePost(String id) async {
     try {
+      _selectedPostForNewComment = null;
       await Amplify.DataStore.delete(Post(id: id, title: null));
       runQueries();
     } catch (e) {
@@ -234,6 +235,7 @@ class _MyAppState extends State<MyApp> {
 
   deleteBlog(String id) async {
     try {
+      _selectedBlogForNewPost = null;
       await Amplify.DataStore.delete(Blog(id: id, name: null));
       runQueries();
     } catch (e) {
