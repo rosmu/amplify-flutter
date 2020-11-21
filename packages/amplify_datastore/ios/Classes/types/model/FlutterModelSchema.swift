@@ -21,14 +21,38 @@ struct FlutterModelSchema {
     
     let name: String
     let pluralName: String?
-    let authRules: AuthRules? = nil
-    let fields: FlutterModelFields
+    let authRules: [FlutterAuthRule]?
+    let fields: [String: FlutterModelField]
+    
+    // Not used for now
     let attributes: [ModelAttribute] = []
     
-    init(serializedData: [String: Any]) {
-        self.name = serializedData["name"] as! String
+    init(serializedData: [String: Any]) throws {
+        
+        guard let name = serializedData["name"] as? String
+        else {
+            throw ModelSchemaError.parse(className: "FlutterModelSchema", fieldName: "name", desiredType: "String")
+        }
+        self.name = name
+
         self.pluralName = serializedData["pluralName"] as? String
-        self.fields = (serializedData["fields"] as! [String: [String: Any]]).mapValues { FlutterModelField.init(serializedData: $0)
+        
+        if let inputAuthRulesMap = serializedData["authRules"] as? [[String:String]]{
+            self.authRules = try inputAuthRulesMap.map{
+                try FlutterAuthRule(serializedData: $0)
+            }
+        }
+        else{
+            self.authRules = nil
+        }
+
+        if let inputFieldsMap = serializedData["fields"] as? [String: [String: Any]]{
+            self.fields = try inputFieldsMap.mapValues {
+                try FlutterModelField.init(serializedData: $0)
+            }
+        }
+        else{
+            throw ModelSchemaError.parse(className: "FlutterModelSchema", fieldName: "fields", desiredType: "[String: [String: Any]]")
         }
     }
     
@@ -36,7 +60,9 @@ struct FlutterModelSchema {
         return ModelSchema.init(
             name: name,
             pluralName: pluralName,
-            authRules: authRules ?? [],
+            authRules: authRules?.map{
+                            $0.convertToNativeAuthRule()
+                        } ?? [AuthRule](),
             attributes: attributes,
             fields: fields.mapValues { $0.convertToNativeModelField() }
         )

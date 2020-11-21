@@ -20,9 +20,9 @@ import Combine
 @testable import amplify_datastore
 
 let testSchema: ModelSchema = ModelSchema.init(name: "Post")
-let amplifySuccessResults: [SerializedModel] =
+let amplifySuccessResults: [FlutterSerializedModel] =
     (try! readJsonArray(filePath: "2_results") as! [[String: Any]]).map { (serializedModel) in
-        SerializedModel.init(
+        FlutterSerializedModel.init(
             id: serializedModel["id"] as! String,
             map: try! getJSONValue(serializedModel["serializedData"] as! [String : Any]))
     }
@@ -53,7 +53,7 @@ class DataStorePluginUnitTests: XCTestCase {
                                             paginate paginationInput: QueryPaginationInput? = nil,
                                             completion: DataStoreCallback<[M]>) throws {
                 // Validations that we called the native library correctly
-                XCTAssert(SerializedModel.self == modelType)
+                XCTAssert(FlutterSerializedModel.self == modelType)
                 XCTAssertEqual(testSchema.name, modelSchema.name)
                 XCTAssertEqual(
                     id.eq("123").or(rating.ge(4).and(not(created.eq("2020-02-20T20:20:20-08:00")))),
@@ -109,7 +109,7 @@ class DataStorePluginUnitTests: XCTestCase {
                                             paginate paginationInput: QueryPaginationInput? = nil,
                                             completion: DataStoreCallback<[M]>) throws {
                 // Validations that we called the native library correctly (i.e. valid defaults in this case)
-                XCTAssert(SerializedModel.self == modelType)
+                XCTAssert(FlutterSerializedModel.self == modelType)
                 XCTAssertEqual(testSchema.name, modelSchema.name)
                 XCTAssertEqual( QueryPredicateConstant.all, predicate as! QueryPredicateConstant)
                 XCTAssertNil(sortInput)
@@ -144,9 +144,10 @@ class DataStorePluginUnitTests: XCTestCase {
 
         class MockDataStoreBridge: DataStoreBridge {
             override func onDelete(id: String,
-                                   modelData: SerializedModel,
+                                   serializedModel: FlutterSerializedModel,
                                    modelSchema: ModelSchema,
-                                   completion: @escaping DataStoreCallback<Void>) throws {
+                                   completion: @escaping DataStoreCallback<Void>
+            ) throws {
                 // Validations that we called the native library correctly
                 XCTAssertEqual(testSchema.name, modelSchema.name)
                 // Return from the mock
@@ -170,7 +171,7 @@ class DataStorePluginUnitTests: XCTestCase {
         
         class MockDataStoreBridge: DataStoreBridge {
             override func onDelete(id: String,
-                                   modelData: SerializedModel,
+                                   serializedModel: FlutterSerializedModel,
                                    modelSchema: ModelSchema,
                                    completion: @escaping DataStoreCallback<Void>) throws {
                 // Validations that we called the native library correctly
@@ -334,9 +335,9 @@ class DataStorePluginUnitTests: XCTestCase {
         // Make sure that the event was indeed sent successfully
         wait(for: [eventSentExp!], timeout: 1)
     }
-    
+
     func test_clear_success() throws {
-        
+
         class MockDataStoreBridge: DataStoreBridge {
             override func onClear(
                 completion: @escaping DataStoreCallback<Void>) throws {
@@ -346,15 +347,15 @@ class DataStorePluginUnitTests: XCTestCase {
         }
         let dataStoreBridge: MockDataStoreBridge = MockDataStoreBridge()
         pluginUnderTest = SwiftAmplifyDataStorePlugin(bridge: dataStoreBridge, flutterModelRegistration: flutterModelSchemaRegistration)
-        
+
         pluginUnderTest.onClear(
             flutterResult: {(result) in
                 XCTAssertNil(result)
         })
     }
-    
+
     func test_clear_failure() throws {
-        
+
         class MockDataStoreBridge: DataStoreBridge {
             override func onClear(
                 completion: @escaping DataStoreCallback<Void>) throws {
@@ -362,10 +363,10 @@ class DataStorePluginUnitTests: XCTestCase {
                 completion(.failure(causedBy: DataStoreError.unknown("test error", "test recovery suggestion", nil)))
             }
         }
-        
+
         let dataStoreBridge: MockDataStoreBridge = MockDataStoreBridge()
         pluginUnderTest = SwiftAmplifyDataStorePlugin(bridge: dataStoreBridge, flutterModelRegistration: flutterModelSchemaRegistration)
-        
+
         pluginUnderTest.onClear(
             flutterResult: { (result) -> Void in
                 if let exception = result as? FlutterError {
@@ -381,4 +382,139 @@ class DataStorePluginUnitTests: XCTestCase {
                 }
         })
     }
+
+    func test_save_success_without_predicate() throws {
+        let testArgs = try readJsonMap(filePath: "instance_without_predicate") as [String: Any]
+
+        class MockDataStoreBridge: DataStoreBridge {
+            override func onSave<M: Model>(
+                serializedModel: M,
+                modelSchema: ModelSchema,
+                when predicate: QueryPredicate? = nil,
+                completion: @escaping DataStoreCallback<M>) throws {
+                // Validations that we called the native library correctly
+                XCTAssertEqual("9fc5fab4-37ff-4566-97e5-19c5d58a4c22", serializedModel.id)
+                XCTAssertEqual(testSchema.name, modelSchema.name)
+                XCTAssertNil(predicate)
+                // Return from the mock
+                completion(.success(serializedModel))
+            }
+        }
+
+        let dataStoreBridge: MockDataStoreBridge = MockDataStoreBridge()
+        pluginUnderTest = SwiftAmplifyDataStorePlugin(bridge: dataStoreBridge, flutterModelRegistration: flutterModelSchemaRegistration)
+
+        pluginUnderTest.onSave(
+            args: testArgs,
+            flutterResult: { (result)  in
+                XCTAssertNil(result)
+            })
+    }
+
+    func test_save_success_with_predicate() throws {
+        let testArgs = try readJsonMap(filePath: "instance_with_predicate") as [String: Any]
+
+        class MockDataStoreBridge: DataStoreBridge {
+            override func onSave<M: Model>(
+                serializedModel: M,
+                modelSchema: ModelSchema,
+                when predicate: QueryPredicate? = nil,
+                completion: @escaping DataStoreCallback<M>) throws {
+                // Validations that we called the native library correctly
+                XCTAssertEqual("a7a22ef5-554c-48c5-bb79-d9cd6dd0ee83", serializedModel.id)
+                XCTAssertEqual(testSchema.name, modelSchema.name)
+                XCTAssertEqual(
+                    rating.eq(5),
+                    predicate as! QueryPredicateOperation
+                )
+                // Return from the mock
+                completion(.success(serializedModel))
+            }
+        }
+
+        let dataStoreBridge: MockDataStoreBridge = MockDataStoreBridge()
+        pluginUnderTest = SwiftAmplifyDataStorePlugin(bridge: dataStoreBridge, flutterModelRegistration: flutterModelSchemaRegistration)
+
+        pluginUnderTest.onSave(
+            args: testArgs,
+            flutterResult: { (result)  in
+                XCTAssertNil(result)
+            })
+    }
+
+    func test_save_with_api_error() throws {
+        let testArgs = try readJsonMap(filePath: "instance_without_predicate") as [String: Any]
+
+        class MockDataStoreBridge: DataStoreBridge {
+            override func onSave<M: Model>(
+            serializedModel: M,
+            modelSchema: ModelSchema,
+            when predicate: QueryPredicate? = nil,
+            completion: @escaping DataStoreCallback<M>) throws {
+                // Validations that we called the native library correctly
+                XCTAssertEqual("9fc5fab4-37ff-4566-97e5-19c5d58a4c22", serializedModel.id)
+                XCTAssertEqual(testSchema.name, modelSchema.name)
+                XCTAssertNil(predicate)
+                // Return from the mock
+                completion(.failure(causedBy: DataStoreError.unknown("test error", "test recovery suggestion", nil)))
+            }
+        }
+
+        let dataStoreBridge: MockDataStoreBridge = MockDataStoreBridge()
+        pluginUnderTest = SwiftAmplifyDataStorePlugin(bridge: dataStoreBridge, flutterModelRegistration: flutterModelSchemaRegistration)
+
+        pluginUnderTest.onSave(
+            args: testArgs,
+            flutterResult: { (results) -> Void in
+                if let exception = results as? FlutterError {
+                    XCTAssertEqual("AmplifyException", exception.code)
+                    XCTAssertEqual(FlutterDataStoreErrorMessage.SAVE_FAILED.rawValue, exception.message)
+                    let errorMap: [String: Any] = exception.details as! [String : Any]
+                    XCTAssertEqual("test error", errorMap["unknown"] as? String)
+                    XCTAssertEqual(
+                        ["platform": "iOS", "localizedErrorMessage": "test error", "recoverySuggestion": "test recovery suggestion"],
+                        errorMap["PLATFORM_EXCEPTIONS"] as? [String: String])
+                } else {
+                    XCTFail()
+                }
+            })
+    }
+
+    func test_save_with_malformed_error() throws {
+
+        class MockDataStoreBridge: DataStoreBridge {
+            override func onSave<M: Model>(
+            serializedModel: M,
+            modelSchema: ModelSchema,
+            when predicate: QueryPredicate? = nil,
+            completion: @escaping DataStoreCallback<M>) throws {
+                // Validations that we called the native library correctly
+                XCTAssertEqual("9fc5fab4-37ff-4566-97e5-19c5d58a4c22", serializedModel.id)
+                XCTAssertEqual(testSchema.name, modelSchema.name)
+                XCTAssertNil(predicate)
+                // Return from the mock
+                completion(.success(serializedModel))
+            }
+        }
+
+        let dataStoreBridge: MockDataStoreBridge = MockDataStoreBridge()
+        pluginUnderTest = SwiftAmplifyDataStorePlugin(bridge: dataStoreBridge, flutterModelRegistration: flutterModelSchemaRegistration)
+
+        pluginUnderTest.onSave(
+            args: [:],
+            flutterResult: { (results) -> Void in
+                if let exception = results as? FlutterError {
+                    XCTAssertEqual("AmplifyException", exception.code)
+                    XCTAssertEqual(FlutterDataStoreErrorMessage.MALFORMED.rawValue, exception.message)
+                    let errorMap: [String: Any] = exception.details as! [String : Any]
+                    XCTAssertEqual("The modelName was not passed in the arguments", errorMap["decodingError"] as? String)
+                    XCTAssertEqual(
+                        ["platform": "iOS", "localizedErrorMessage": "The modelName was not passed in the arguments", "recoverySuggestion": "The request should include the modelName of type String"],
+                        errorMap["PLATFORM_EXCEPTIONS"] as? [String: String])
+                } else {
+                    XCTFail()
+                }
+            })
+    }
+
 }

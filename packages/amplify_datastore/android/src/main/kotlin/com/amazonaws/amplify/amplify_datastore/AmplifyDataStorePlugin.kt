@@ -195,7 +195,7 @@ class AmplifyDataStorePlugin : FlutterPlugin, MethodCallHandler {
 
         try {
             modelName = request["modelName"] as String
-            modelData = request["model"] as Map<String, Any>
+            modelData = request["serializedModel"] as Map<String, Any>
         } catch (e: ClassCastException) {
             postFlutterError(
                     flutterResult,
@@ -318,4 +318,5 @@ class AmplifyDataStorePlugin : FlutterPlugin, MethodCallHandler {
     private fun postFlutterError(flutterResult: Result, msg: String, errorMap: Map<String, Any>) {
         handler.post { flutterResult.error("AmplifyException", msg, errorMap) }
     }
+
 }
